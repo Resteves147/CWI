@@ -1,0 +1,14 @@
+.site-header{
+    position: sticky;
+    top: 0;
+    background-color: red;
+}
+
+.container{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    height: 72px;
+}
