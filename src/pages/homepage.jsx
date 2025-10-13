@@ -1,5 +1,6 @@
 import farm from "../assets/farming.jpg";
 import "./homepage.css";
+import { Link } from "react-router-dom";
 
 const Homepage = () => {
     return (
@@ -29,10 +30,12 @@ const Homepage = () => {
                     At this moment, the calculator assumes one basin on flat land.
                 </p>
             </div>
-
+            <Link to="fill_in.jsx">
             <button className="calc">
                 Get Started
             </button>
+            </Link>
+            
         </section>
     );
 }
