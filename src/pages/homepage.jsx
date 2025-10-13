@@ -30,7 +30,7 @@ const Homepage = () => {
                     At this moment, the calculator assumes one basin on flat land.
                 </p>
             </div>
-            <Link to="fill_in.jsx">
+            <Link to="fill_in">
             <button className="calc">
                 Get Started
             </button>

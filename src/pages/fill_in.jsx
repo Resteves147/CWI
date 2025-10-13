@@ -1,9 +1,12 @@
-const form = () => {
+import "./fill_in.css";
+
+const FillIn = () => {
     return(
-        <div className="main">
-            <div className="secondary">
-                <h1>Recharge Basin Calculator</h1>
+       <section className="first">
+            <div className="second">
+                <h1>HelloWorld</h1>
             </div>
-        </div>
+       </section>
     );
 }
+export default FillIn;
