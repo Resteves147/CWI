@@ -3,7 +3,7 @@
     padding: 3%;
     background-color: #13248C;
     width: 100vw;
-    position: absolute;
+    position: static;
     min-height: 50px;
     bottom: 0;
 }
