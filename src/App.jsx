@@ -5,7 +5,7 @@ import Homepage from './pages/homepage';
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import NotFound from "./pages/NotFound.jsx";
-import FillIn from "./pages/fill_in.jsx";
+import Form from "./pages/form.jsx";
 
 
 function Layout() {
@@ -26,7 +26,7 @@ function App() {
     <Routes>
       <Route element={<Layout /> }>
         <Route path ="/" element={<Homepage />}/>
-        <Route path ="/fill_in" element={<FillIn />}/>
+        <Route path ="/form" element={<Form />}/>
         <Route path ="*" element={<NotFound />} />
       </Route>
     </Routes>

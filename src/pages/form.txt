@@ -1,0 +1,407 @@
+import "./fill_in.css";
+import { useState } from "react";
+
+const FillIn = () => {
+    // State for all 11 inputs
+    const [formData, setFormData] = useState({
+        soilType: "",
+        wetYearFrequency: "",
+        monthsDuringWetYears: "",
+        landCost: "",
+        pipelineMeasurement: "",
+        earthWorkCost: "",
+        interestRate: "",
+        yearsLoan: "",
+        costRechargeWater: "",
+        valueStoredWater: "",
+        omCost: ""
+    });
+
+    const [showResults, setShowResults] = useState(false);
+    const [results, setResults] = useState(null);
+    const [errors, setErrors] = useState({});
+
+    // Soil type options
+    const soilTypes = [
+        { value: "sand", label: "Sand", infiltrationRate: 20 },
+        { value: "loamy_sand", label: "Loamy Sand", infiltrationRate: 15 },
+        { value: "sandy_loam", label: "Sandy Loam", infiltrationRate: 10 },
+        { value: "loam", label: "Loam", infiltrationRate: 5 },
+        { value: "silt_loam", label: "Silt Loam", infiltrationRate: 3 },
+        { value: "clay_loam", label: "Clay Loam", infiltrationRate: 2 },
+        { value: "clay", label: "Clay", infiltrationRate: 1 }
+    ];
+
+    // Handle input changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Validate form
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.soilType) {
+            newErrors.soilType = "Please select a soil type";
+        }
+
+        if (!formData.wetYearFrequency || formData.wetYearFrequency < 0 || formData.wetYearFrequency > 100) {
+            newErrors.wetYearFrequency = "Wet year frequency must be between 0 and 100";
+        }
+
+        if (!formData.monthsDuringWetYears || formData.monthsDuringWetYears < 1 || formData.monthsDuringWetYears > 12) {
+            newErrors.monthsDuringWetYears = "Months must be between 1 and 12";
+        }
+
+        if (!formData.landCost || parseFloat(formData.landCost) < 0) {
+            newErrors.landCost = "Land cost must be a positive number";
+        }
+
+        if (!formData.pipelineMeasurement || parseFloat(formData.pipelineMeasurement) < 0) {
+            newErrors.pipelineMeasurement = "Pipeline measurement must be a positive number";
+        }
+
+        if (!formData.earthWorkCost || parseFloat(formData.earthWorkCost) < 0) {
+            newErrors.earthWorkCost = "Earth work cost must be a positive number";
+        }
+
+        if (!formData.interestRate || parseFloat(formData.interestRate) < 0 || parseFloat(formData.interestRate) > 100) {
+            newErrors.interestRate = "Interest rate must be between 0 and 100";
+        }
+
+        if (!formData.yearsLoan || parseInt(formData.yearsLoan) < 1) {
+            newErrors.yearsLoan = "Years for loan must be at least 1";
+        }
+
+        if (!formData.costRechargeWater || parseFloat(formData.costRechargeWater) < 0) {
+            newErrors.costRechargeWater = "Cost of recharge water must be a positive number";
+        }
+
+        if (!formData.valueStoredWater || parseFloat(formData.valueStoredWater) < 0) {
+            newErrors.valueStoredWater = "Value of stored water must be a positive number";
+        }
+
+        if (!formData.omCost || parseFloat(formData.omCost) < 0) {
+            newErrors.omCost = "O&M cost must be a positive number";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    // Handle form submission and calculations
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        if (validateForm()) {
+            // Perform calculations
+            const calculatedResults = calculateBasinCost(formData);
+            setResults(calculatedResults);
+            setShowResults(true);
+            
+            // Scroll to results
+            setTimeout(() => {
+                document.querySelector('.results-section')?.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        } else {
+            setShowResults(false);
+            // Scroll to first error
+            setTimeout(() => {
+                const firstError = document.querySelector('.error-message');
+                firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    };
+
+    // Calculation function (placeholder - needs actual formula)
+    const calculateBasinCost = (data) => {
+        // Add your calculation logic here
+        const totalInitialCost = parseFloat(data.landCost || 0) + 
+                                 parseFloat(data.earthWorkCost || 0);
+        
+        return {
+            totalInitialCost,
+            annualCost: 0, // Add calculation
+            benefitCostRatio: 0, // Add calculation
+            isWorthwhile: false // Add logic
+        };
+    };
+
+    // Reset form
+    const handleReset = () => {
+        setFormData({
+            soilType: "",
+            wetYearFrequency: "",
+            monthsDuringWetYears: "",
+            landCost: "",
+            pipelineMeasurement: "",
+            earthWorkCost: "",
+            interestRate: "",
+            yearsLoan: "",
+            costRechargeWater: "",
+            valueStoredWater: "",
+            omCost: ""
+        });
+        setShowResults(false);
+        setResults(null);
+        setErrors({});
+    };
+
+    return(
+       <section className="first">
+            <div className="second">
+                <h1>Recharge Basin Calculator</h1>
+                <p className="description">
+                    Enter your information below to calculate the cost and benefit of building a recharge basin.
+                </p>
+
+                <form onSubmit={handleSubmit} className="calculator-form">
+                    {/* 1. Soil Type */}
+                    <div className="form-group">
+                        <label htmlFor="soilType">1. Soil Type *</label>
+                        <select
+                            id="soilType"
+                            name="soilType"
+                            value={formData.soilType}
+                            onChange={handleChange}
+                            required
+                            className={errors.soilType ? 'error' : ''}
+                        >
+                            <option value="">Select soil type...</option>
+                            {soilTypes.map(soil => (
+                                <option key={soil.value} value={soil.value}>
+                                    {soil.label}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.soilType && <span className="error-message">{errors.soilType}</span>}
+                    </div>
+
+                    {/* 2. Wet Year Frequency */}
+                    <div className="form-group">
+                        <label htmlFor="wetYearFrequency">2. Wet Year Frequency (%) *</label>
+                        <input
+                            type="number"
+                            id="wetYearFrequency"
+                            name="wetYearFrequency"
+                            value={formData.wetYearFrequency}
+                            onChange={handleChange}
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            placeholder="e.g., 30"
+                            required
+                            className={errors.wetYearFrequency ? 'error' : ''}
+                        />
+                        {errors.wetYearFrequency && <span className="error-message">{errors.wetYearFrequency}</span>}
+                    </div>
+
+                    {/* 3. Months During Wet Years */}
+                    <div className="form-group">
+                        <label htmlFor="monthsDuringWetYears">3. Months During Wet Years *</label>
+                        <input
+                            type="number"
+                            id="monthsDuringWetYears"
+                            name="monthsDuringWetYears"
+                            value={formData.monthsDuringWetYears}
+                            onChange={handleChange}
+                            min="1"
+                            max="12"
+                            step="1"
+                            placeholder="e.g., 4"
+                            required
+                            className={errors.monthsDuringWetYears ? 'error' : ''}
+                        />
+                        {errors.monthsDuringWetYears && <span className="error-message">{errors.monthsDuringWetYears}</span>}
+                    </div>
+
+                    {/* 4. Land Cost */}
+                    <div className="form-group">
+                        <label htmlFor="landCost">4. Land Cost ($) *</label>
+                        <input
+                            type="number"
+                            id="landCost"
+                            name="landCost"
+                            value={formData.landCost}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 50000"
+                            required
+                            className={errors.landCost ? 'error' : ''}
+                        />
+                        {errors.landCost && <span className="error-message">{errors.landCost}</span>}
+                    </div>
+
+                    {/* 5. Pipeline Measurement */}
+                    <div className="form-group">
+                        <label htmlFor="pipelineMeasurement">5. Pipeline Measurement (ft) *</label>
+                        <input
+                            type="number"
+                            id="pipelineMeasurement"
+                            name="pipelineMeasurement"
+                            value={formData.pipelineMeasurement}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.1"
+                            placeholder="e.g., 1000"
+                            required
+                            className={errors.pipelineMeasurement ? 'error' : ''}
+                        />
+                        {errors.pipelineMeasurement && <span className="error-message">{errors.pipelineMeasurement}</span>}
+                    </div>
+
+                    {/* 6. Cubic Yard for Earth Work */}
+                    <div className="form-group">
+                        <label htmlFor="earthWorkCost">6. Cubic Yard for Earth Work ($) *</label>
+                        <input
+                            type="number"
+                            id="earthWorkCost"
+                            name="earthWorkCost"
+                            value={formData.earthWorkCost}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 15000"
+                            required
+                            className={errors.earthWorkCost ? 'error' : ''}
+                        />
+                        {errors.earthWorkCost && <span className="error-message">{errors.earthWorkCost}</span>}
+                    </div>
+
+                    {/* 7. Interest Rate */}
+                    <div className="form-group">
+                        <label htmlFor="interestRate">7. Interest Rate (%) *</label>
+                        <input
+                            type="number"
+                            id="interestRate"
+                            name="interestRate"
+                            value={formData.interestRate}
+                            onChange={handleChange}
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            placeholder="e.g., 5.5"
+                            required
+                            className={errors.interestRate ? 'error' : ''}
+                        />
+                        {errors.interestRate && <span className="error-message">{errors.interestRate}</span>}
+                    </div>
+
+                    {/* 8. Years Loan */}
+                    <div className="form-group">
+                        <label htmlFor="yearsLoan">8. Years for Loan *</label>
+                        <input
+                            type="number"
+                            id="yearsLoan"
+                            name="yearsLoan"
+                            value={formData.yearsLoan}
+                            onChange={handleChange}
+                            min="1"
+                            step="1"
+                            placeholder="e.g., 20"
+                            required
+                            className={errors.yearsLoan ? 'error' : ''}
+                        />
+                        {errors.yearsLoan && <span className="error-message">{errors.yearsLoan}</span>}
+                    </div>
+
+                    {/* 9. Cost of Recharge Water */}
+                    <div className="form-group">
+                        <label htmlFor="costRechargeWater">9. Cost of Recharge Water ($) *</label>
+                        <input
+                            type="number"
+                            id="costRechargeWater"
+                            name="costRechargeWater"
+                            value={formData.costRechargeWater}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 25"
+                            required
+                            className={errors.costRechargeWater ? 'error' : ''}
+                        />
+                        {errors.costRechargeWater && <span className="error-message">{errors.costRechargeWater}</span>}
+                    </div>
+
+                    {/* 10. Value of Stored Water */}
+                    <div className="form-group">
+                        <label htmlFor="valueStoredWater">10. Value of Stored Water ($) *</label>
+                        <input
+                            type="number"
+                            id="valueStoredWater"
+                            name="valueStoredWater"
+                            value={formData.valueStoredWater}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 100"
+                            required
+                        />
+                    </div>
+
+                    {/* 11. O&M Cost */}
+                    <div className="form-group">
+                        <label htmlFor="omCost">11. O&M - Operations & Maintenance ($) *</label>
+                        <input
+                            type="number"
+                            id="omCost"
+                            name="omCost"
+                            value={formData.omCost}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 5000"
+                            required
+                        />
+                    </div>
+
+                    {/* Submit Buttons */}
+                    <div className="form-actions">
+                        <button type="submit" className="btn-calculate">
+                            Calculate
+                        </button>
+                        <button type="button" className="btn-reset" onClick={handleReset}>
+                            Reset
+                        </button>
+                    </div>
+                </form>
+
+                {/* Results Section */}
+                {showResults && results && (
+                    <div className="results-section">
+                        <h2>Calculation Results</h2>
+                        <div className="results-grid">
+                            <div className="result-item">
+                                <span className="result-label">Total Initial Cost:</span>
+                                <span className="result-value">${results.totalInitialCost.toLocaleString()}</span>
+                            </div>
+                            <div className="result-item">
+                                <span className="result-label">Annual Cost:</span>
+                                <span className="result-value">${results.annualCost.toLocaleString()}</span>
+                            </div>
+                            <div className="result-item">
+                                <span className="result-label">Benefit-Cost Ratio:</span>
+                                <span className="result-value">{results.benefitCostRatio.toFixed(2)}</span>
+                            </div>
+                            <div className="result-item recommendation">
+                                <span className="result-label">Recommendation:</span>
+                                <span className={`result-value ${results.isWorthwhile ? 'worthwhile' : 'not-worthwhile'}`}>
+                                    {results.isWorthwhile ? 'Worthwhile Investment' : 'Not Recommended'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+       </section>
+    );
+}
+export default FillIn;

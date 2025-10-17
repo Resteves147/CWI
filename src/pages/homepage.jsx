@@ -38,7 +38,7 @@ const Homepage = () => {
                 <br></br>
                 <h2><strong>Recharge Basin Calculator</strong></h2> 
                 <p>
-                    This calculator is intended to help farmers determine whether a recharge basin on oor near their
+                    This calculator is intended to help farmers determine whether a recharge basin on or near their
                     property is worthwhile. This tool provides only a preliminary cost estimate.
                     Recharge basins should be professionally designed to reduce the risk of basin failure.
                     Farmers should consult with your water district manager regarding the frequency of availability and
@@ -46,16 +46,12 @@ const Homepage = () => {
                     At this moment, this calculator is a work in progress and has been discussed at just one Technical Committee Meeting of the Water Blueprint.
                     At this moment, the calculator assumes one basin on flat land.
                 </p>
-
-
-
-            </div>
-            <Link to="fill_in">
-            <button className="calc">
-                Get Started
-            </button>
-            </Link>
-            
+                <Link to="form">
+                <button className="calc">
+                    Get Started
+                </button>
+                </Link>
+            </div>     
         </section>
     );
 }
