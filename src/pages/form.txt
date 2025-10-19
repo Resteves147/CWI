@@ -405,3 +405,55 @@ const FillIn = () => {
     );
 }
 export default FillIn;
+
+{showResults && (
+            <div className="results-container">
+                <h2>Calculation Results</h2>
+                <div className="results-grid">
+                    <div className="result-item">
+                        <strong>Soil Type:</strong>
+                        <span>{soilType.find(s => s.value === Input.soilType)?.label || Input.soilType}</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Wet Year Frequency:</strong>
+                        <span>{Input.wetYearFrequency} years</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Month Duration:</strong>
+                        <span>{Input.monthDuration} months</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Land Cost:</strong>
+                        <span>${parseFloat(Input.landCost).toLocaleString()}</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Pipeline Feet:</strong>
+                        <span>{parseFloat(Input.piplineFt).toLocaleString()} ft</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Cubic Yards:</strong>
+                        <span>{parseFloat(Input.cubicYd).toLocaleString()} yd³</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Interest Rate:</strong>
+                        <span>{Input.interestRate}%</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Year Loan:</strong>
+                        <span>{Input.yearLoan} years</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Cost of Recharge:</strong>
+                        <span>${parseFloat(Input.costRecharge).toLocaleString()}</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>Value of Water:</strong>
+                        <span>${parseFloat(Input.valueWater).toLocaleString()}</span>
+                    </div>
+                    <div className="result-item">
+                        <strong>OM Cost:</strong>
+                        <span>${parseFloat(Input.omCost).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+        )}

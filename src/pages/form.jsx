@@ -46,10 +46,11 @@ const Form = () => {
     };
 
     return(
-      <div className="form-container">
+      <div className="form-header">
         <h1><strong>Recharge Basin Calculator</strong></h1>
         <p>Please Fill out the following information to determine if a recharge basin is a good investment for your farm.</p>
-
+        {/*Form*/}
+        <div className="form-container">
         <form onSubmit={handleSubmit}>
             <div className="form-group">
                 <br></br>
@@ -137,10 +138,39 @@ const Form = () => {
                     step="1000"
                 />
                 <button className="btn" onClick={handleSubmit}>Calculate</button>
+                </div>
+            </form>
+        </div>
+        {/*Show Results*/}
+        {showResults && (
+            <div className="result-container">
+                <h2>Results:</h2>
+                <table className="results-table">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Costs</th>
+                            <th>Benefits</th>
+                            <th>Net Benefits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Array.from({ length: parseInt(Input.yearLoan) || 0 }, (_, index) => (
+                            <tr key={index}>
+                                <td>{index + 1}</td>
+                                {/*Costs*/}
+                                <td>$0.00</td>
+                                {/*Benefits*/}
+                                <td>$0.00</td>
+                                {/*Net Benefits*/}
+                                <td>$0.00</td>
+                                {/*These are hard coded for now*/}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
-        </form>
-
-
+        )}
       </div>
     );
 }
