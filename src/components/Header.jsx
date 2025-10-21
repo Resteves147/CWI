@@ -1,5 +1,6 @@
 import "./header.css";
 import logo from "../assets/fresnostate_logo.png";
+import Form from "../pages/form.jsx";
 
 const Header = () => {
     return(
@@ -10,6 +11,12 @@ const Header = () => {
                     src= {logo}
                     alt="fresnostate logo"
                 />
+                <nav className="nav">
+                    <ul className="nav-list">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/form">Form</a></li>
+                    </ul>
+                </nav>
             </div>
         </header>
         
