@@ -18,12 +18,11 @@ const Form = () => {
         omCost: "",
     });
 
-    const [Results, setResults] = useState(false);
     const [showResults, setShowResults] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setInput({ ...Input, [name]: value });
+        setInput({ ...Input, [name]: value.trim() });
     };
 
     {/* Soil Type */}
@@ -41,49 +40,58 @@ const Form = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setResults(true);
         setShowResults(true);
     };
 
     const validateForm = () => {
         if(Input.wetYearFrequency < 0 || Input.wetYearFrequency > 10 || Input.wetYearFrequency === ""){
-            alert("Please enter a wet year frequency");
+            alert("Invalid input: Please enter a wet year frequency");
+            setShowResults(false);
             return false;
         }
-        if(Input.monthDuration < 0 || Input.monthDuration > 12 || Input.monthDuration === ""){
-            alert("Please enter a month duration between 0 and 12");
+        if(Input.monthDuration < 1 || Input.monthDuration > 12 || Input.monthDuration === ""){
+            alert("Invalid input: Please enter a month duration between 1 and 12");
+            setShowResults(false);
             return false;
         }
         if(Input.landCost < 0 || Input.landCost > 1000000 || Input.landCost === ""){
-            alert("Please enter a land cost between 0 and 1000000");
+            alert("Invalid input: Please enter a land cost between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         if(Input.piplineFt < 0 || Input.piplineFt > 1000000 || Input.piplineFt === ""){
-            alert("Please enter a pipline feet between 0 and 1000000");
+            alert("Invalid input: Please enter a pipline feet between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         if(Input.cubicYd < 0 || Input.cubicYd > 1000000 || Input.cubicYd === ""){
-            alert("Please enter a cubic yards between 0 and 1000000");
+            alert("Invalid input: Please enter a cubic yards between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         if(Input.interestRate < 0 || Input.interestRate > 100 || Input.interestRate === ""){
-            alert("Please enter an interest rate between 0 and 100");
+            alert("Invalid input: Please enter an interest rate between 0 and 100");
+            setShowResults(false);
             return false;
         }
         if(Input.yearLoan < 0 || Input.yearLoan > 100 || Input.yearLoan === ""){
-            alert("Please enter a year loan between 0 and 100");
+            alert("Invalid input: Please enter a year loan between 0 and 100");
+            setShowResults(false);
             return false;
         }
         if(Input.costRecharge < 0 || Input.costRecharge > 1000000 || Input.costRecharge === ""){
-            alert("Please enter a cost recharge between 0 and 1000000");
+            alert("Invalid input: Please enter a cost recharge between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         if(Input.valueWater < 0 || Input.valueWater > 1000000 || Input.valueWater === ""){
-            alert("Please enter a value of water between 0 and 1000000");
+            alert("Invalid input: Please enter a value of water between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         if(Input.omCost < 0 || Input.omCost > 1000000 || Input.omCost === ""){
-            alert("Please enter an OM cost between 0 and 1000000");
+            alert("Invalid input: Please enter an OM cost between 0 and 1000000");
+            setShowResults(false);
             return false;
         }
         return true;
@@ -176,13 +184,13 @@ const Form = () => {
                     min="0"
                     max="1000000"
                 />
-                <button className="btn" onClick={handleSubmit && validateForm} >Calculate</button>
+                <button className="btn" onClick={handleSubmit} >Calculate</button>
                 </div>
 
             </form>
         </div>
         {/*Show Results*/}
-        {showResults && (
+        {showResults && validateForm() && (
             <div className="result-container">
                 <h2>Results:</h2>
                 <table className="results-table">
