@@ -4,7 +4,6 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import Homepage from './pages/homepage';
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import NotFound from "./pages/NotFound.jsx";
 import Form from "./pages/form.jsx";
 
 
