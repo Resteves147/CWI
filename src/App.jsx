@@ -27,7 +27,6 @@ function App() {
       <Route element={<Layout /> }>
         <Route path ="/" element={<Homepage />}/>
         <Route path ="/form" element={<Form />}/>
-        <Route path ="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
