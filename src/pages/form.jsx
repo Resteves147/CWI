@@ -45,6 +45,51 @@ const Form = () => {
         setShowResults(true);
     };
 
+    const validateForm = () => {
+        if(Input.wetYearFrequency < 0 || Input.wetYearFrequency > 10 || Input.wetYearFrequency === ""){
+            alert("Please enter a wet year frequency");
+            return false;
+        }
+        if(Input.monthDuration < 0 || Input.monthDuration > 12 || Input.monthDuration === ""){
+            alert("Please enter a month duration between 0 and 12");
+            return false;
+        }
+        if(Input.landCost < 0 || Input.landCost > 1000000 || Input.landCost === ""){
+            alert("Please enter a land cost between 0 and 1000000");
+            return false;
+        }
+        if(Input.piplineFt < 0 || Input.piplineFt > 1000000 || Input.piplineFt === ""){
+            alert("Please enter a pipline feet between 0 and 1000000");
+            return false;
+        }
+        if(Input.cubicYd < 0 || Input.cubicYd > 1000000 || Input.cubicYd === ""){
+            alert("Please enter a cubic yards between 0 and 1000000");
+            return false;
+        }
+        if(Input.interestRate < 0 || Input.interestRate > 100 || Input.interestRate === ""){
+            alert("Please enter an interest rate between 0 and 100");
+            return false;
+        }
+        if(Input.yearLoan < 0 || Input.yearLoan > 100 || Input.yearLoan === ""){
+            alert("Please enter a year loan between 0 and 100");
+            return false;
+        }
+        if(Input.costRecharge < 0 || Input.costRecharge > 1000000 || Input.costRecharge === ""){
+            alert("Please enter a cost recharge between 0 and 1000000");
+            return false;
+        }
+        if(Input.valueWater < 0 || Input.valueWater > 1000000 || Input.valueWater === ""){
+            alert("Please enter a value of water between 0 and 1000000");
+            return false;
+        }
+        if(Input.omCost < 0 || Input.omCost > 1000000 || Input.omCost === ""){
+            alert("Please enter an OM cost between 0 and 1000000");
+            return false;
+        }
+        return true;
+    };
+
+    {/*Form*/}
     return(
       <div className="form-header">
         <h1><strong>Recharge Basin Calculator</strong></h1>
@@ -86,21 +131,18 @@ const Form = () => {
                     type="number" id="landCost" name="landCost" value={Input.landCost} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
                 <label htmlFor="piplineFt">Pipline Feet</label>
                 <input 
                     type="number" id="piplineFt" name="piplineFt" value={Input.piplineFt} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
                 <label htmlFor="cubicYd">Cubic Yards</label>
                 <input 
                     type="number" id="cubicYd" name="cubicYd" value={Input.cubicYd} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
                 <label htmlFor="interestRate">Interest Rate</label>
                 <input 
@@ -121,24 +163,22 @@ const Form = () => {
                     type="number" id="costRecharge" name="costRecharge" value={Input.costRecharge} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
                 <label htmlFor="valueWater">Value of Water</label>
                 <input 
                     type="number" id="valueWater" name="valueWater" value={Input.valueWater} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
                 <label htmlFor="omCost">OM Cost</label>
                 <input 
                     type="number" id="omCost" name="omCost" value={Input.omCost} onChange={handleChange} 
                     min="0"
                     max="1000000"
-                    step="1000"
                 />
-                <button className="btn" onClick={handleSubmit}>Calculate</button>
+                <button className="btn" onClick={handleSubmit && validateForm} >Calculate</button>
                 </div>
+
             </form>
         </div>
         {/*Show Results*/}
@@ -168,6 +208,26 @@ const Form = () => {
                             </tr>
                         ))}
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>PV</th>
+                            <td>$0.00</td>
+                            <td>$0.00</td>
+                            <td>$0.00</td>
+                        </tr>
+                        <tr>
+                            <th className="bc-ratio">B/C Ratio</th>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>$0.00</td>
+                        </tr>
+                        <tr>
+                            <th className="roi">ROI</th>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td> 
+                            <td>0%</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         )}
