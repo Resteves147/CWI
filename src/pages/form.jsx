@@ -2,6 +2,7 @@ import "./form.css";
 import { useState } from "react";
 
 
+
 const Form = () => {
     {/*input fields for the form*/}
     const [Input, setInput] = useState({

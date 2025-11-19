@@ -1,5 +1,6 @@
 // Recharge Basin Calculations
 
+
 /**
  * Hard coded values for the project
  */
@@ -18,7 +19,7 @@ const DevelopmentCosts={
     "interest rate": .05, // 5% interest rate
     "loan_term": 10,
 };  
-
+const acpond = 160;
 /**
  * Get infiltration rate based on soil type
  */
@@ -95,9 +96,85 @@ const calculateLessInside = (inside_slope, freeboard, water_depth) =>{
 const calculateWettedInside = (water_depth, inside_slope) =>{
     return water_depth * inside_slope * 2;
 }
-const calculateWetLength = (calculateLessTop, calculateLessInside, calculateWettedInside, calculateOutsideLevee) =>{
-    return calculateLessTop + calculateLessInside + calculateWettedInside + calculateOutsideLevee;
+const calculateWetLength = (calculateoutSideLength, calculateLessTop, calculateLessInside, calculateWettedInside, calculateOutsideLevee) =>{
+    return calculateoutSideLength - (calculateOutsideLevee + calculateLessTop + calculateLessInside + calculateWettedInside)
 }
 const calculateWettedArea = (calculateWetLength) =>{
-    return calculateWetLength * 2;
+    return calculateWetLength * 2 / 9;
 }
+const acres =(cacluatedwettedArea)=> {
+    return cacluatedwettedArea / 4840;
+}
+const grossAC = (acres) => {
+    return acres / acpond;
+}
+
+
+/* OUTPUT VALUES */
+
+const LandPurchase = acpond; // acres
+const Earthwork = 10951; // cubic yards
+const PiplineInlets = 1; // each
+const Pipline = 2640; // feet
+const fencing = 0; // hardcoded, not suppose to be constant
+const Engineering_contingency = .2;
+
+const unitCost_pipline_inlets = 20000; // dollars per inlet (30")
+const unitCost_pipline = 200; // dollars per foot
+const unitCost_fencing = 6; // dollars per foot
+
+const totalLandCost = LandPurchase * DevelopmentCosts.land_cost;
+const totalEarthworkCost = Earthwork * DevelopmentCosts.earthwork_cost;
+const totalPiplineInletsCost = PiplineInlets * unitCost_pipline_inlets;
+const totalPiplineCost = Pipline * unitCost_pipline;
+const totalFencingCost = fencing * unitCost_fencing;
+
+const totalCost = totalLandCost + totalEarthworkCost + totalPiplineInletsCost + totalFencingCost + totalPiplineCost;
+
+const calculateEngineeringContingency = Engineering_contingency * totalCost;
+
+const totalEstimatedCost = totalCost + calculateEngineeringContingency;
+
+
+/**
+ * Calculate PMT (Payment) function for loan payments
+ * @param {number} principal - Total loan amount (totalEstimatedCost)
+ * @param {number} interestRate - Annual interest rate as a percentage (e.g., 5 for 5%)
+ * @param {number} years - Loan term in years
+ * @returns {number} Annual payment amount
+ */
+// Annual Capital Payment
+export const calculatePMT = (principal, interestRate, years) => {
+    // Handle edge cases
+    if (!principal || principal <= 0) return 0;
+    if (!years || years <= 0) return 0;
+    if (!interestRate || interestRate < 0) return principal / years; // Simple division if no interest
+    
+    // Convert interest rate from percentage to decimal (e.g., 5% -> 0.05)
+    const rate = interestRate / 100;
+    
+    // If interest rate is 0, return simple division
+    if (rate === 0) {
+        return principal / years;
+    }
+    
+    // PMT formula: PMT = PV * (r * (1 + r)^n) / ((1 + r)^n - 1)
+    // Where: PV = principal, r = rate per period, n = number of periods
+    const ratePerPeriod = rate; // Annual rate for annual payments
+    const numberOfPeriods = years;
+    
+    const numerator = ratePerPeriod * Math.pow(1 + ratePerPeriod, numberOfPeriods);
+    const denominator = Math.pow(1 + ratePerPeriod, numberOfPeriods) - 1;
+    
+    const payment = principal * (numerator / denominator);
+    
+    return payment;
+}
+const AnnualNetRecharge = acres * getInfiltrationRate(soilType); // ft/day
+const netRecharge = AnnualNetRecharge * 30 *  4 * .3 * (1-.3)// ft/year
+const capitalPerAcre= calculatePMT(totalEstimatedCost, DevelopmentCosts.interestRate, DevelopmentCosts.loan_term) / netRecharge;
+
+const costRechargeWater = 35
+const costOM = 5
+const totalRechargeWater= cacluatePMT(costRechargeWater, DevelopmentCosts.interestRate, DevelopmentCosts.loan_term) + costRechargeWater + costO&M;
+const netBenefit = 200 - totalRechargeWater;// 200 is the af values of stored water
