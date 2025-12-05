@@ -46,7 +46,7 @@ const Homepage = () => {
                     At this moment, this calculator is a work in progress and has been discussed at just one Technical Committee Meeting of the Water Blueprint.
                     At this moment, the calculator assumes one basin on flat land.
                 </p>
-                <Link to="form">
+                <Link to="/map">
                 <button className="calc">
                     Get Started
                 </button>

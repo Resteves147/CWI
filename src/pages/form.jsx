@@ -1,10 +1,20 @@
 import "./form.css";
+import * as calc from "./utils/calculations.js";
 import { useState } from "react";
-
-
+import { useLocation } from "react-router-dom";
 
 const Form = () => {
     {/*input fields for the form*/}
+
+    const location = useLocation();
+    const rectangleData = location.state?.rectangleData;
+    const topSoil = location.state?.topSoil;
+    const longSide = rectangleData?.longSide;
+    const shortSide = rectangleData?.shortSide;
+    const acres = (longSide * shortSide) / 43560;
+    const soil = topSoil;
+
+
     const [Input, setInput] = useState({
         soilType: "",
         wetYearFrequency: "",
@@ -20,6 +30,7 @@ const Form = () => {
     });
 
     const [showResults, setShowResults] = useState(false);
+    const [calculationResults, setCalculationResults] = useState(null); 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,10 +52,21 @@ const Form = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Validate form first
+        if (!validateForm()) {
+            return;
+        }
+        
+        // Calculate and store results
+        const results = calculateResults();
+        setCalculationResults(results);
+        console.log("calculationResults: ", results);
         setShowResults(true);
     };
 
     const validateForm = () => {
+
         if(Input.wetYearFrequency < 0 || Input.wetYearFrequency > 10 || Input.wetYearFrequency === ""){
             alert("Please enter a wet year frequency");
             setShowResults(false);
@@ -98,6 +120,132 @@ const Form = () => {
         return true;
     };
 
+    const calculateResults = () => {
+        //parse the input values
+        const wetYearFrequency = parseFloat(Input.wetYearFrequency / 10);
+        const monthDuration = parseFloat(Input.monthDuration);
+        const landCost = parseFloat(Input.landCost);
+        const piplineFt = parseFloat(Input.piplineFt);
+        const cubicYd = parseFloat(Input.cubicYd);
+        const interestRate = parseFloat(Input.interestRate);
+        const yearLoan = parseFloat(Input.yearLoan);
+        const costRecharge = parseFloat(Input.costRecharge);
+
+        //calculate the results
+        const perimeter = calc.perimeter(longSide, shortSide);
+        const area = calc.area(acres);
+        //volume of the basin
+        const center = calc.center(perimeter);
+        const inside = calc.inside(perimeter);
+        const outside = calc.outside(perimeter);
+        const total_Volume = calc.total_Volume(center, inside, outside);
+        const cost_Volume = calc.cost_Volume(total_Volume, cubicYd);
+        //wetted area
+        const outsideLength = calc.outside_Length(perimeter);
+        const lessOutside = calc.less_Outside();
+        const lessTop = calc.less_Top();
+        const lessInside = calc.less_Inside();
+        const wettedInside = calc.wetted_Inside();
+        const netInside = calc.net_Inside(outsideLength, lessTop, lessInside, lessOutside, wettedInside);
+        const wettedArea = calc.wetted_Area(netInside);
+        const wettedAreaAcre = calc.wetted_Area_Acre(wettedArea);
+        const grossAcre = calc.gross_Acre(wettedAreaAcre, acres);
+        // land
+        const land_Cost = calc.land_Cost(landCost, acres);
+        const land_Cost_Acre = calc.land_Cost_Acre(land_Cost, acres);
+        // earthwork
+        const earthwork_Cost = calc.earthwork_Cost(total_Volume, cubicYd);
+        const earthwork_Cost_Acre = calc.earthwork_Cost_Acre(earthwork_Cost, acres);
+        // pipeline
+        const pipeline_Cost = calc.pipeline_Cost(piplineFt);
+        const pipeline_Cost_Acre = calc.pipeline_Cost_Acre(pipeline_Cost, acres);
+        // fencing
+        const fencing_Cost = calc.fencing_Cost(1, 6);
+        const fencing_Cost_Acre = calc.fencing_Cost_Acre(fencing_Cost, acres);
+        // subtotal
+        const subtotal = calc.subtotal(land_Cost, earthwork_Cost, pipeline_Cost, fencing_Cost);
+        const subtotal_Acre = calc.subtotal_Acre(subtotal, acres);
+        // e cost
+        const e_Cost = calc.e_Cost(subtotal);
+        const e_Cost_Acre = calc.e_Cost_Acre(e_Cost, acres);
+        const e_cost_total = calc.e_cost_total(subtotal, e_Cost);
+        
+        // recharge calculations
+        const infiltrationRate = parseFloat(Input.soilType) || 0;
+        const avg_annual_recharge = calc.avg_annual_recharge(infiltrationRate, wettedAreaAcre);
+        const net_Recharge = calc.net_Recharge(avg_annual_recharge, monthDuration, wetYearFrequency, 0.3);
+        
+        // annual capital payment
+        const annual_Capital_payment = calc.annual_Capital_payment(e_cost_total, interestRate / 100, yearLoan);
+        const valueWater = parseFloat(Input.valueWater) || 0;
+        const omCost = parseFloat(Input.omCost) || 0;
+        const annualized_Capital_Cost = calc.annualized_Capital_Cost(annual_Capital_payment, net_Recharge);
+        const total_Annulaized = calc.total_Annulaized(annualized_Capital_Cost, costRecharge, omCost);
+        const net_Benefits = calc.net_Benefits(valueWater, total_Annulaized);
+        const results_Cost_0 = calc.results_Cost_0(e_cost_total);
+        const results_costs = calc.results_costs(costRecharge, omCost, net_Recharge, wettedAreaAcre, 0);
+        const results_benefits = calc.results_benefits(net_Recharge, valueWater);
+        const results_net_benefits = calc.results_net_benefits(results_benefits, results_costs);
+        
+        // Calculate yearly results
+        const yearlyResults = [];
+        
+        // Year 0 - Initial investment (negative cost, no benefits)
+        yearlyResults.push({
+            year: 0,
+            costs: calc.results_Cost_0(e_cost_total),
+            benefits: 0,
+            netBenefits: calc.results_Cost_0(e_cost_total)
+        });
+        
+        // Years 1 through yearLoan - Recurring costs and benefits
+        for (let year = 1; year <= yearLoan; year++) {
+            const costs = calc.results_costs(costRecharge, omCost, net_Recharge, wettedAreaAcre, 0);
+            const benefits = calc.results_benefits(net_Recharge, valueWater);
+            const netBen = calc.results_net_benefits(benefits, costs);
+            
+            yearlyResults.push({
+                year: year,
+                costs: costs,
+                benefits: benefits,
+                netBenefits: netBen
+            });
+        }
+        
+        // Calculate NPV for each column
+        const costArray = yearlyResults.map(r => r.costs);
+        const benefitArray = yearlyResults.map(r => r.benefits);
+        const netBenefitArray = yearlyResults.map(r => r.netBenefits);
+        
+        const npvCosts = calc.calculateNPV(costArray, 0.05);
+        const npvBenefits = calc.calculateNPV(benefitArray, 0.05);
+        const npvNetBenefits = calc.calculateNPV(netBenefitArray, 0.05);
+        
+        // Calculate B/C ratio and ROI
+        const bcRatio = calc.bcRatio(npvBenefits, Math.abs(npvCosts));
+        const roiValue = calc.roi(npvBenefits, Math.abs(npvCosts));
+
+        return { 
+            yearlyResults,
+            npv: {
+                costs: npvCosts,
+                benefits: npvBenefits,
+                netBenefits: npvNetBenefits
+            },
+            bcRatio,
+            roi: roiValue,
+            summary: {
+                acres,
+                wettedAreaAcre,
+                net_Recharge,
+                total_cost: e_cost_total,
+                net_Benefits
+            }
+        };
+        
+    };
+
+
     {/*Form*/}
     return(
       <div className="form-header">
@@ -108,6 +256,20 @@ const Form = () => {
         <form onSubmit={handleSubmit}>
             <div className="form-group">
                 <br></br>
+                <label htmlFor = "LongSide">Long Side</label>
+                <input 
+                    type="number" id="longSide" name="longSide" value={longSide} onChange={handleChange} 
+                    min="0"
+                    max="1000000"
+                />
+                <label htmlFor = "ShortSide">Short Side</label>
+                <input 
+                    type="number" id="shortSide" name="shortSide" value={shortSide} onChange={handleChange} 
+                    min="0"
+                    max="1000000"
+                />
+                <label htmlFor="areaAcres">{acres} acres</label>
+                
                 <label htmlFor="soilType">Soil Type(click to select)</label>
                 <select
                     id="soilType"
@@ -116,7 +278,7 @@ const Form = () => {
                     onChange={handleChange}
                 >
                     {soilType.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <option key={option.value} value={option.infiltrationRate}>{option.label}</option> // changed value to infiltrationRate
                     ))}
                 </select>
                 <label htmlFor="wetYearFrequency">Wet Year Frequency</label>
@@ -189,10 +351,16 @@ const Form = () => {
                 </div>
 
             </form>
+
+
         </div>
+
+
+
         {/*Show Results*/}
-        {showResults && validateForm() && (
+        {showResults && calculationResults && (
             <div className="result-container">
+
                 <h2>Results:</h2>
                 <table className="results-table">
                     <thead>
@@ -204,37 +372,33 @@ const Form = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {Array.from({ length: parseInt(Input.yearLoan) || 0 }, (_, index) => (
-                            <tr key={index}>
-                                <td>{index + 1}</td>
-                                {/*Costs*/}
-                                <td>$0.00</td>
-                                {/*Benefits*/}
-                                <td>$0.00</td>
-                                {/*Net Benefits*/}
-                                <td>$0.00</td>
-                                {/*These are hard coded for now*/}
+                        {calculationResults.yearlyResults.map((result) => (
+                            <tr key={result.year}>
+                                <td>{result.year}</td>
+                                <td>${result.costs.toFixed(2)}</td>
+                                <td>${result.benefits.toFixed(2)}</td>
+                                <td>${result.netBenefits.toFixed(2)}</td>
                             </tr>
                         ))}
                     </tbody>
                     <tfoot>
                         <tr>
                             <th>PV</th>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
-                            <td>$0.00</td>
+                            <td>${calculationResults.npv.costs.toFixed(2)}</td>
+                            <td>${calculationResults.npv.benefits.toFixed(2)}</td>
+                            <td>${calculationResults.npv.netBenefits.toFixed(2)}</td>
                         </tr>
                         <tr>
                             <th className="bc-ratio">B/C Ratio</th>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
-                            <td>$0.00</td>
+                            <td>{calculationResults.bcRatio.toFixed(2)}</td>
                         </tr>
                         <tr>
                             <th className="roi">ROI</th>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td> 
-                            <td>0%</td>
+                            <td>{(calculationResults.roi * 100).toFixed(2)}%</td>
                         </tr>
                     </tfoot>
                 </table>

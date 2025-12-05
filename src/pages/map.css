@@ -1,1 +1,11 @@
 #map { height: 500px; }
+
+#button {
+    display:inline-block;
+    margin-top: 32px;
+    border-radius: .75rem;
+    background-color: #B1103B;
+    color: white;
+    padding: 12px 16px 12px 16px;
+    justify-content: center;
+}

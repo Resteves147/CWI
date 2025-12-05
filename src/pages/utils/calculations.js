@@ -1,180 +1,137 @@
+// import { irr npv } from "finanical";
 // Recharge Basin Calculations
 
-
-/**
- * Hard coded values for the project
- */
-const hardCodedValues = {
-    "top_levee": 8,
-    "freeboard": 1,
-    "water_depth": 1,
-    "inside_slope": 1,
-    "outside_slope": 2,
-};
-
-const DevelopmentCosts={
-    "land_cost": 6000,
-    "pipline_cost": 2640,
-    "earthwork_cost": 12,
-    "interest rate": .05, // 5% interest rate
-    "loan_term": 10,
-};  
-const acpond = 160;
-/**
- * Get infiltration rate based on soil type
- */
-export const getInfiltrationRate = (soilType) => {
-  const soilRates = {
-    "sand": 1,
-    "sandy": 0.7,
-    "loam": 0.6,
-    "loamy": 0.5,
-    "silt/clay": 0.4,
-    "silt/clay/layering": 0.3,
-    "clay soil": 0.05,
-  };
-  return soilRates[soilType] || 0;
-};
+//Basin Dimensions
+const inside_slope = 4;
+const outside_slope = 2;
+const top_levee = 8;
+const slope_pond = 0;
+const freeboard = 1;
+const water_depth = 1;
 
 
-export const calculateArea = (acre) => {
-    return acre / 640;
-};
+//Calculations
+export const  area = (acres) => acres/640;
+export const perimeter = (longSide, shortSide) => 2*(longSide + shortSide);
 
-export const calculateParameter= (length, width) => {
-    return 2 * (length + width);
-};
-/**
- * Calculate the volume of earthwork
- */
+// Volume
+export const center = (perimeter) => perimeter * (freeboard + water_depth) * top_levee / 27;
+export const inside = (perimeter) => (freeboard + water_depth)*2 *4 * perimeter *2 /2 / 27;
+export const outside = (perimeter) => (freeboard + water_depth) *2 *2 * perimeter *2 /2 / 27;
+export const total_Volume = (center, inside, outside) => center + inside + outside;
+export const cost_Volume = (total_Volume, cubic_yards) => total_Volume * cubic_yards;
 
-// Center of levee
-export const calculateCenterOfLevee = (top_levee,freeboard, water_depth) => {
-    const perimeter = calculateParameter(length, width);
-    return perimeter * (freeboard + water_depth) * top_levee / 27;
-};
-
-export const calculateInsideLevee = (inside_slope, freeboard, water_depth) => {
-    const perimeter = calculateParameter(length, width);
-    return (freeboard + water_depth) * inside_slope * (freeboard + water_depth) * perimeter / 2 / 27;
-};
-
-export const calculateOutsideLevee = (outside_slope, freeboard, water_depth) => {
-    const perimeter = calculateParameter(length, width);
-    return (freeboard + water_depth) * outside_slope * (freeboard + water_depth) * perimeter / 2 / 27;
-};
+//Wetted Area
+export const outside_Length = (perimeter) => perimeter /4;
+export const less_Outside = () => (freeboard + water_depth) * outside_slope * 2;
+export const less_Top = () => top_levee * 2;
+export const less_Inside = () => (freeboard + water_depth) * inside_slope;
+export const wetted_Inside = () => water_depth * inside_slope * 2;
+export const net_Inside = (outsideLength, lessTop, lessInside, lessOutside, wettedInside) => outsideLength - (lessTop + lessInside + lessOutside) - wettedInside;
+export const wetted_Area = (netInside) => netInside * 2 / 9;
+export const wetted_Area_Acre = (wettedArea) => wettedArea / 4840;
+export const gross_Acre = (wettedAreaAcre, acres) => wettedAreaAcre / acres;
 
 
-const calculateVolume = (center_of_levee, inside_levee, outside_levee) => {
-    return center_of_levee + inside_levee + outside_levee;
-};
 
-const calculateTotalCost = (earthwork) => {
-    const volume = calculateVolume(center_of_levee, inside_levee, outside_levee);
-    return earthwork * volume;
-};
-
-/**
- * Calculate the wetted Area
- */
-
-const calculateOutSideLength = () =>{
-    const perimeter = calculateParameter(length, width);
-    return perimeter / 4;
+// Land Purchase
+export const land_Cost = (opportunity_cost, acres) => {
+    if (!opportunity_cost || opportunity_cost === 0)
+        return 0;
+    return opportunity_cost * acres;
 }
+export const land_Cost_Acre = (land_Cost, acres) => land_Cost / acres;
 
-const calculateOutsideLevee = (outside_slope, freeboard, water_depth) =>{
-    return (freeboard + water_depth) * outside_slope * 2;
-
+//EarthWork
+export const earthwork_Cost = (total_Volume, cubic_yards) => {
+    if (!total_Volume || total_Volume === 0)
+        return 0;
+    return total_Volume * cubic_yards;
 }
-const calculateLessTop = (top_levee) =>{
-    return top_levee * 2;
-}
-const calculateLessInside = (inside_slope, freeboard, water_depth) =>{
-    return (freeboard + water_depth) * inside_slope * 2;
-}
-const calculateWettedInside = (water_depth, inside_slope) =>{
-    return water_depth * inside_slope * 2;
-}
-const calculateWetLength = (calculateoutSideLength, calculateLessTop, calculateLessInside, calculateWettedInside, calculateOutsideLevee) =>{
-    return calculateoutSideLength - (calculateOutsideLevee + calculateLessTop + calculateLessInside + calculateWettedInside)
-}
-const calculateWettedArea = (calculateWetLength) =>{
-    return calculateWetLength * 2 / 9;
-}
-const acres =(cacluatedwettedArea)=> {
-    return cacluatedwettedArea / 4840;
-}
-const grossAC = (acres) => {
-    return acres / acpond;
-}
+export const earthwork_Cost_Acre = (earthwork_Cost, acres) => earthwork_Cost / acres;
 
 
-/* OUTPUT VALUES */
+// Pipline
+const pipeline_unit = 20000;
+export const pipeline_Cost = (pipeline_unit) =>  pipeline_unit * 1;
+export const pipeline_Cost_Acre = (pipeline_Cost, acres) => pipeline_Cost / acres;
 
-const LandPurchase = acpond; // acres
-const Earthwork = 10951; // cubic yards
-const PiplineInlets = 1; // each
-const Pipline = 2640; // feet
-const fencing = 0; // hardcoded, not suppose to be constant
-const Engineering_contingency = .2;
+//Fencing
+const fencing_quantity = 1;
+const fencing_cost = 6;
+export const fencing_Cost = (fencing_quantity, fencing_cost) => fencing_quantity * fencing_cost;
+export const fencing_Cost_Acre = (fencing_Cost, acres) => fencing_Cost / acres;
 
-const unitCost_pipline_inlets = 20000; // dollars per inlet (30")
-const unitCost_pipline = 200; // dollars per foot
-const unitCost_fencing = 6; // dollars per foot
+//total cost
+export const subtotal=(land_Cost, earthwork_Cost, pipeline_Cost, fencing_Cost) => land_Cost + earthwork_Cost + pipeline_Cost + fencing_Cost;
+export const subtotal_Acre = (subtotal, acres) => subtotal / acres;
 
-const totalLandCost = LandPurchase * DevelopmentCosts.land_cost;
-const totalEarthworkCost = Earthwork * DevelopmentCosts.earthwork_cost;
-const totalPiplineInletsCost = PiplineInlets * unitCost_pipline_inlets;
-const totalPiplineCost = Pipline * unitCost_pipline;
-const totalFencingCost = fencing * unitCost_fencing;
-
-const totalCost = totalLandCost + totalEarthworkCost + totalPiplineInletsCost + totalFencingCost + totalPiplineCost;
-
-const calculateEngineeringContingency = Engineering_contingency * totalCost;
-
-const totalEstimatedCost = totalCost + calculateEngineeringContingency;
+//Engineering and Contingency
+const E_percent = .2;
+export const e_Cost = (subtotal) => subtotal * E_percent;
+export const e_Cost_Acre = (e_Cost, acres) => e_Cost / acres;
+export const e_cost_total = (subtotal, e_Cost) => subtotal + e_Cost;
 
 
-/**
- * Calculate PMT (Payment) function for loan payments
- * @param {number} principal - Total loan amount (totalEstimatedCost)
- * @param {number} interestRate - Annual interest rate as a percentage (e.g., 5 for 5%)
- * @param {number} years - Loan term in years
- * @returns {number} Annual payment amount
- */
-// Annual Capital Payment
-export const calculatePMT = (principal, interestRate, years) => {
-    // Handle edge cases
-    if (!principal || principal <= 0) return 0;
-    if (!years || years <= 0) return 0;
-    if (!interestRate || interestRate < 0) return principal / years; // Simple division if no interest
-    
-    // Convert interest rate from percentage to decimal (e.g., 5% -> 0.05)
-    const rate = interestRate / 100;
+// others
+export const annual_Capital_payment = (e_cost_total, interest_rate, year_loan) => {
+    // Validate inputs
+    if (!e_cost_total || e_cost_total <= 0) return 0;
+    if (!year_loan || year_loan <= 0) return 0;
+    if (interest_rate === undefined || interest_rate < 0) return 0;
     
     // If interest rate is 0, return simple division
-    if (rate === 0) {
-        return principal / years;
+    if (interest_rate === 0) {
+        return e_cost_total / year_loan;
     }
     
-    // PMT formula: PMT = PV * (r * (1 + r)^n) / ((1 + r)^n - 1)
+    // Convert annual interest rate to monthly rate (assuming interest_rate is already in decimal form, e.g., 0.05 for 5%)
+    const ratePerPeriod = interest_rate / 12;
+    
+    // Calculate total number of payments
+    const totalPayments = year_loan * 12;
+    
+    // PMT Formula: PMT = PV × [r(1 + r)^n] / [(1 + r)^n - 1]
     // Where: PV = principal, r = rate per period, n = number of periods
-    const ratePerPeriod = rate; // Annual rate for annual payments
-    const numberOfPeriods = years;
+    const numerator = ratePerPeriod * Math.pow(1 + ratePerPeriod, totalPayments);
+    const denominator = Math.pow(1 + ratePerPeriod, totalPayments) - 1;
     
-    const numerator = ratePerPeriod * Math.pow(1 + ratePerPeriod, numberOfPeriods);
-    const denominator = Math.pow(1 + ratePerPeriod, numberOfPeriods) - 1;
+    const monthlyPayment = e_cost_total * (numerator / denominator);
     
-    const payment = principal * (numerator / denominator);
-    
-    return payment;
-}
-const AnnualNetRecharge = acres * getInfiltrationRate(soilType); // ft/day
-const netRecharge = AnnualNetRecharge * 30 *  4 * .3 * (1-.3)// ft/year
-const capitalPerAcre= calculatePMT(totalEstimatedCost, DevelopmentCosts.interestRate, DevelopmentCosts.loan_term) / netRecharge;
+    // Return annual payment (monthly * 12)
+    return monthlyPayment * 12;
+};
+const evaporation_loss = .3;
+const annual_loss_crop = 0;
 
-const costRechargeWater = 35
-const costOM = 5
-const totalRechargeWater= cacluatePMT(costRechargeWater, DevelopmentCosts.interestRate, DevelopmentCosts.loan_term) + costRechargeWater + costO&M;
-const netBenefit = 200 - totalRechargeWater;// 200 is the af values of stored water
+export const avg_annual_recharge = (infiltration_rate, wetted_Area_Acre) => infiltration_rate * wetted_Area_Acre;
+export const net_Recharge = (avg_annual_recharge, month_duration, wet_year_frequency) => {
+    return avg_annual_recharge * 30 *month_duration * wet_year_frequency * (1 - evaporation_loss);
+}
+export const annualized_Capital_Cost = (annual_Capital_payment, net_Recharge) => annual_Capital_payment / net_Recharge;
+const water_purchase_cost = 35;
+const OM_cost = 5;
+export const total_Annulaized = (annualized_Capital_Cost, water_purchase_cost, OM_cost) => annualized_Capital_Cost + water_purchase_cost + OM_cost;
+export const net_Benefits = (value_water, total_Annulaized) => value_water - total_Annulaized;
+
+//results
+const discount_rate = .05;
+export const results_Cost_0 = (e_cost_total) => e_cost_total * -1;
+export const results_costs = (water_purchase_cost, OM_cost, net_recharge, wetted_Area_Acre) => {
+    return -1 *(water_purchase_cost + OM_cost) * net_recharge + annual_loss_crop * wetted_Area_Acre;
+}
+export const results_benefits = (net_recharge, value_water) => net_recharge + value_water;
+export const results_net_benefits = (results_benefits, results_costs) => results_benefits + results_costs;
+
+
+export const calculateNPV = (money, discount_rate) => {
+    let npv = 0;
+    for (let t = 0; t < money.length; t++) {
+        npv += money[t] / Math.pow((1 + discount_rate), t);
+    }
+    return npv;
+}
+export const bcRatio = (benefits, costs) => benefits / costs;
+
+export const roi = (benefits, costs) => benefits / costs; // change later
+

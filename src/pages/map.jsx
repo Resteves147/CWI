@@ -1,5 +1,9 @@
 import  { useEffect } from 'react';
 import './map.css';
+import { Link } from "react-router-dom";
+import { useState } from "react";
+
+
 
 async function fetchSoil(geojson){
     const url = '/soil';
@@ -31,7 +35,11 @@ async function fetchSoil(geojson){
 }
 
 const Map = () =>{
+    const [rectangleData, setRectangleData] = useState(null);
+        const [topSoil, setTopSoil] = useState("");
+   
     useEffect(() => {
+        
         const L = window.L;
         if(!L) return;
         
@@ -97,7 +105,12 @@ const Map = () =>{
             const areaAcres = area / 43560;
 
             const fmt = (p) => `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+            setRectangleData({
+                longSide,
+                shortSide,
+                areaAcres,
 
+            });
             const corners = [nw, ne, se, sw];
             console.log("corners: ", corners);
 
@@ -125,7 +138,8 @@ const Map = () =>{
                 console.log("[map] Received data:", data);
                 const topSoilObj = data.topSoil || data.topsoil;
                 const topSoil = topSoilObj?.symbol || (typeof topSoilObj === 'string' ? topSoilObj : 'Unknown');
-
+                //set the top soil
+                setTopSoil(topSoilObj);
                 const html = `
                 <b>Rectangle</b><br/>
                 Long: ${longSide.toFixed(1)} ft<br/>
@@ -161,8 +175,23 @@ const Map = () =>{
 
     }, []);
 
-
-    return <div id="map" />;
+    return (
+        <div>
+            <h1>Map</h1>
+            <p>This is an interactive map that allows you to draw a rectangle on your desired property and get the soil type and acreage of the area.</p>
+            <p>Please use the mouse to click and draw to your desired property.</p>
+            <p>The square button on the side will allow you to draw a rectangle anywhere on the map.</p>
+            <p>Once you drawn the rectangle, please click the button at the bottom of the map to continue the process.</p>
+            <div id="map" />
+            <Link to="/form"
+                state ={ {rectangleData, topSoil}}>
+                <button className="calc">
+                    Continue
+                </button>
+            </Link>
+            
+        </div>
+    );
 };
 
 export default Map;
