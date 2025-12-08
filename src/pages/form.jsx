@@ -9,9 +9,12 @@ const Form = () => {
     const location = useLocation();
     const rectangleData = location.state?.rectangleData;
     const topSoil = location.state?.topSoil;
-    const longSide = rectangleData?.longSide;
-    const shortSide = rectangleData?.shortSide;
-    const acres = (longSide * shortSide) / 43560;
+    const longSideStr = rectangleData?.longSide.toFixed(2);
+    const shortSideStr = rectangleData?.shortSide.toFixed(2);
+    const longSide = parseFloat(longSideStr);
+    const shortSide = parseFloat(shortSideStr);
+    const acresStr= (longSide * shortSide) / 43560;
+    const acres = parseFloat(acresStr);
     const soil = topSoil;
 
 
@@ -46,6 +49,9 @@ const Form = () => {
         {value: "silt/clay", label:"Silt or Clay loam", infiltrationRate: "0.4"},
         {value: "silt/clay/layering", label:"Silt or Clay with some fine layering", infiltrationRate: "0.3"},
         {value: "clay soil", label:"Clay Soil with restrictive layers", infiltrationRate: "0.05"},
+
+        //default
+        {value: "Default", label:"cannot read soil", infiltrationRate:"0.6"},
     ];
 
 
@@ -67,7 +73,7 @@ const Form = () => {
 
     const validateForm = () => {
 
-        if(Input.wetYearFrequency < 0 || Input.wetYearFrequency > 10 || Input.wetYearFrequency === ""){
+        if(Input.wetYearFrequency < 0 || Input.wetYearFrequency > 100 || Input.wetYearFrequency === ""){
             alert("Please enter a wet year frequency");
             setShowResults(false);
             return false;
@@ -120,87 +126,153 @@ const Form = () => {
         return true;
     };
 
+
     const calculateResults = () => {
+
+        console.log("infiltration rate:", {infiltrationRate})
         //parse the input values
-        const wetYearFrequency = parseFloat(Input.wetYearFrequency / 10);
+        const wetYearFrequency = parseFloat(Input.wetYearFrequency / 100);
+
+        console.log("wet year:", {wetYearFrequency});
         const monthDuration = parseFloat(Input.monthDuration);
+        console.log("Month duration:" ,{monthDuration});
         const landCost = parseFloat(Input.landCost);
+        console.log("landcost:", {landCost});
         const piplineFt = parseFloat(Input.piplineFt);
+        console.log("pipline:",{piplineFt});
         const cubicYd = parseFloat(Input.cubicYd);
-        const interestRate = parseFloat(Input.interestRate);
+        console.log("cubicYD:", {cubicYd});
+        const interestRate = parseFloat(Input.interestRate) / 100;
+        console.log("interest rate:" ,{interestRate});
         const yearLoan = parseFloat(Input.yearLoan);
+        console.log("yearLoan:", {yearLoan});
         const costRecharge = parseFloat(Input.costRecharge);
+        console.log("costRecharge:" ,{costRecharge});
+        const valueWater = parseFloat(Input.valueWater);
+        console.log("value water:", { valueWater });
+        const omCost = parseFloat(Input.omCost);
+        console.log("omCost:", { omCost });
+
+        console.log("longside:", { longSide });
+        console.log("shortSide:", { shortSide });
+        console.log("acres", { acres });
 
         //calculate the results
         const perimeter = calc.perimeter(longSide, shortSide);
-        const area = calc.area(acres);
+        console.log("perm:", {perimeter})
+        const area = calc.area(acres); // not needed
         //volume of the basin
         const center = calc.center(perimeter);
+        console.log("center:", {center});
         const inside = calc.inside(perimeter);
+        console.log("inside:", {inside});
         const outside = calc.outside(perimeter);
+        console.log("outside:", {outside});
         const total_Volume = calc.total_Volume(center, inside, outside);
+        console.log("total_Volume:", {total_Volume});
         const cost_Volume = calc.cost_Volume(total_Volume, cubicYd);
+        console.log("total cost:", {cost_Volume});
         //wetted area
         const outsideLength = calc.outside_Length(perimeter);
+        console.log("outsideLength", {outsideLength});
         const lessOutside = calc.less_Outside();
+        console.log("lessOutside", {lessOutside});
         const lessTop = calc.less_Top();
+        console.log("lessTop", {lessTop});
         const lessInside = calc.less_Inside();
+        console.log("lessInside", {lessInside});
         const wettedInside = calc.wetted_Inside();
+        console.log("wettedInside", {wettedInside});
         const netInside = calc.net_Inside(outsideLength, lessTop, lessInside, lessOutside, wettedInside);
+        console.log("netInside", {netInside});
         const wettedArea = calc.wetted_Area(netInside);
+        console.log("wettedarea", {wettedArea});
         const wettedAreaAcre = calc.wetted_Area_Acre(wettedArea);
+        console.log("wettedareaacre", {wettedAreaAcre});
         const grossAcre = calc.gross_Acre(wettedAreaAcre, acres);
+        console.log("gross acre:", { grossAcre });
         // land
         const land_Cost = calc.land_Cost(landCost, acres);
+        console.log("land_cost:", { land_Cost });
         const land_Cost_Acre = calc.land_Cost_Acre(land_Cost, acres);
+        console.log("land_Cost_Acre:", { land_Cost_Acre });
         // earthwork
         const earthwork_Cost = calc.earthwork_Cost(total_Volume, cubicYd);
+        console.log("earthwork_cost:", { earthwork_Cost });
         const earthwork_Cost_Acre = calc.earthwork_Cost_Acre(earthwork_Cost, acres);
-        // pipeline
+        console.log("earthwork_cost_acre:", { earthwork_Cost_Acre });
+        // pipeline_inlets
         const pipeline_Cost = calc.pipeline_Cost(piplineFt);
+        console.log("pipeline_cost:", { pipeline_Cost });
         const pipeline_Cost_Acre = calc.pipeline_Cost_Acre(pipeline_Cost, acres);
+        console.log("pipeline_cost_acres:", { pipeline_Cost_Acre });
+        //Pipline 30"
+        const pipeline_thirty = calc.pipeline_30_Cost(piplineFt);
+        console.log("pipline 30:", {pipeline_thirty})
+        const pipeline_thirty_acres = calc.pipeline_30_acre(pipeline_thirty,acres);
+        console.log("pipeline 30 acres:", {pipeline_thirty_acres});
         // fencing
-        const fencing_Cost = calc.fencing_Cost(1, 6);
+        const fencing_Cost = calc.fencing_Cost(0, 6);
+        console.log("fencing costs:", { fencing_Cost });
         const fencing_Cost_Acre = calc.fencing_Cost_Acre(fencing_Cost, acres);
+        console.log("fencing cost acre:", { fencing_Cost_Acre });
         // subtotal
-        const subtotal = calc.subtotal(land_Cost, earthwork_Cost, pipeline_Cost, fencing_Cost);
+        const subtotal = calc.subtotal(land_Cost, earthwork_Cost, pipeline_Cost, fencing_Cost, pipeline_thirty);
+        console.log("subtotal:", { subtotal });
         const subtotal_Acre = calc.subtotal_Acre(subtotal, acres);
+        console.log("subtotal acre:", { subtotal_Acre });
         // e cost
         const e_Cost = calc.e_Cost(subtotal);
+        console.log("engineering cost:", { e_Cost });
         const e_Cost_Acre = calc.e_Cost_Acre(e_Cost, acres);
+        console.log("Engineering acre:", { e_Cost_Acre });
         const e_cost_total = calc.e_cost_total(subtotal, e_Cost);
+        console.log("Total_Cost_Estimate:", { e_cost_total });
         
         // recharge calculations
         const infiltrationRate = parseFloat(Input.soilType) || 0;
+        const annual_Capital = calc.annual_Capital_payment(e_cost_total,interestRate,yearLoan);
+        console.log("Annual Capital Payment:", {annual_Capital});
         const avg_annual_recharge = calc.avg_annual_recharge(infiltrationRate, wettedAreaAcre);
+        console.log("avg_annual_recharge:", {avg_annual_recharge});
         const net_Recharge = calc.net_Recharge(avg_annual_recharge, monthDuration, wetYearFrequency, 0.3);
-        
-        // annual capital payment
-        const annual_Capital_payment = calc.annual_Capital_payment(e_cost_total, interestRate / 100, yearLoan);
-        const valueWater = parseFloat(Input.valueWater) || 0;
-        const omCost = parseFloat(Input.omCost) || 0;
+        console.log("net recharge:", {net_Recharge});
+
+        // annual capital payment --------------- stopped here 
+        const annual_Capital_payment = calc.annual_Capital_payment(e_cost_total, interestRate, yearLoan);
+        console.log("annual_Capital_payment:", { annual_Capital_payment})
         const annualized_Capital_Cost = calc.annualized_Capital_Cost(annual_Capital_payment, net_Recharge);
-        const total_Annulaized = calc.total_Annulaized(annualized_Capital_Cost, costRecharge, omCost);
+        console.log("annualized capital cost;", { annualized_Capital_Cost})
+        const total_Annulaized = calc.total_Annulaized(annualized_Capital_Cost, costRecharge,omCost);
+        console.log("total annualized: ", { total_Annulaized});
         const net_Benefits = calc.net_Benefits(valueWater, total_Annulaized);
+        console.log("net benefits:", {net_Benefits});
+
+
+        ///return on investments
         const results_Cost_0 = calc.results_Cost_0(e_cost_total);
+        console.log("results_Cost_0:" , {results_Cost_0});
         const results_costs = calc.results_costs(costRecharge, omCost, net_Recharge, wettedAreaAcre, 0);
+        console.log("results_costs:", {results_costs});
         const results_benefits = calc.results_benefits(net_Recharge, valueWater);
+        console.log("results_benefits:", {results_benefits});
         const results_net_benefits = calc.results_net_benefits(results_benefits, results_costs);
-        
+        console.log("results net benefits:", {results_net_benefits});
+
         // Calculate yearly results
         const yearlyResults = [];
         
         // Year 0 - Initial investment (negative cost, no benefits)
         yearlyResults.push({
             year: 0,
-            costs: calc.results_Cost_0(e_cost_total),
-            benefits: 0,
-            netBenefits: calc.results_Cost_0(e_cost_total)
+            costs: calc.results_Cost_0(e_cost_total), // correct
+            benefits: 0, // had to be 0
+            netBenefits: calc.results_Cost_0(e_cost_total) // correct
         });
         
         // Years 1 through yearLoan - Recurring costs and benefits
         for (let year = 1; year <= yearLoan; year++) {
-            const costs = calc.results_costs(costRecharge, omCost, net_Recharge, wettedAreaAcre, 0);
+            const costs = calc.results_costs(costRecharge, omCost, net_Recharge, wettedAreaAcre,0); // correct
             const benefits = calc.results_benefits(net_Recharge, valueWater);
             const netBen = calc.results_net_benefits(benefits, costs);
             
@@ -217,13 +289,13 @@ const Form = () => {
         const benefitArray = yearlyResults.map(r => r.benefits);
         const netBenefitArray = yearlyResults.map(r => r.netBenefits);
         
-        const npvCosts = calc.calculateNPV(costArray, 0.05);
-        const npvBenefits = calc.calculateNPV(benefitArray, 0.05);
-        const npvNetBenefits = calc.calculateNPV(netBenefitArray, 0.05);
+        const npvCosts = calc.calculateNPV(costArray);
+        const npvBenefits = calc.calculateNPV(benefitArray);
+        const npvNetBenefits = calc.calculateNPV(netBenefitArray);
         
         // Calculate B/C ratio and ROI
-        const bcRatio = calc.bcRatio(npvBenefits, Math.abs(npvCosts));
-        const roiValue = calc.roi(npvBenefits, Math.abs(npvCosts));
+        const bcRatio = calc.bcRatio(npvBenefits, npvCosts);
+        const roiValue = calc.roi(netBenefitArray);
 
         return { 
             yearlyResults,
@@ -256,7 +328,7 @@ const Form = () => {
         <form onSubmit={handleSubmit}>
             <div className="form-group">
                 <br></br>
-                <label htmlFor = "LongSide">Long Side</label>
+                <label htmlFor = "LongSide">Long Side (ft)</label>
                 <input 
                     type="number" id="longSide" name="longSide" value={longSide} onChange={handleChange} 
                     min="0"
@@ -268,7 +340,7 @@ const Form = () => {
                     min="0"
                     max="1000000"
                 />
-                <label htmlFor="areaAcres">{acres} acres</label>
+                <label htmlFor="areaAcres">{acres.toFixed(2)} acres</label>
                 
                 <label htmlFor="soilType">Soil Type(click to select)</label>
                 <select
@@ -286,7 +358,7 @@ const Form = () => {
                     type="number" 
                     id="wetYearFrequency" name="wetYearFrequency" value={Input.wetYearFrequency} onChange={handleChange} 
                     min="0"
-                    max="10"
+                    max="100"
                     step="1"
                 />
                 <label htmlFor="monthDuration">Month Duration during wet years</label>
